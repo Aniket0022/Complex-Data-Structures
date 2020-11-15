@@ -1,0 +1,126 @@
+#include<bits/stdc++.h>
+using namespace std;
+#define SIZE 26
+
+typedef struct trie{
+	struct trie* child[SIZE];
+	bool stringEnd;
+}node;
+
+node* createNode(void)
+{
+	int i;
+	node* tempNode = new node;
+	tempNode->stringEnd =false;
+	for(i=0;i<SIZE;i++)
+		tempNode->child[i] =NULL;
+	return tempNode;
+}
+
+void insertNode(node *root,string str)
+{
+	int index=0;
+	for(int i=0;i<str.length();i++)
+	{
+		index = str[i] - 'A';
+		//check if ptr is null at that A- index
+		if(!root->child[index])
+			root->child[index] = createNode();
+		root = root->child[index];
+	}
+	root->stringEnd = true;
+}
+
+bool isEmpty(node* root)
+{
+	for(int i=0;i<SIZE;i++)
+	{
+		if(root->child[i])
+			return false;
+	}
+	//cout<<"it is empty!!"<<endl;
+	return true;
+}
+
+bool searchNode(node* root,string str)
+{
+	for(int i=0;i<str.length();i++)
+	{
+		int index = str[i] - 'A';
+		//if null
+		if(!root->child[index])
+			return false;
+		//increment to next element
+		root = root->child[index];	
+	}
+	return((root != NULL) && root->stringEnd);	
+}
+node* deleteNode(node* root,string str,int count =0)
+{
+	//if no elements
+	if(!root)
+		return NULL;
+
+	//for last value of string
+	if(count == str.size())
+	{
+		if(root->stringEnd)
+			root->stringEnd = false;
+		if(isEmpty(root)){
+			delete(root);
+			root =NULL;
+		}
+		return root;
+	}
+	
+	//else for rest values
+	int index = str[count] - 'A';
+	//recursively reach till last value and delete reversely
+	root->child[index] = deleteNode(root->child[index],str,count+1);
+	if(isEmpty(root) && (root->stringEnd == false)){
+		delete(root);
+		root =NULL;
+	}
+
+return root;
+}
+
+int main()
+{
+	cout<<"inside main"<<endl;
+	string input[] = {"BAN","BAD","ABC"};
+	node* head = createNode();
+	cout<<"no nodes inserted yet!!"<<endl;
+	if(isEmpty(head))	
+	cout<<"it is empty!!"<<endl;
+	else
+		cout<<"Trie is not empty!"<<endl;
+	insertNode(head,input[0]);
+	cout<<"after insert" <<endl;
+	if(isEmpty(head))
+	cout<<"it is empty!!"<<endl;
+	else
+		cout<<"Trie is not empty!"<<endl;
+	insertNode(head,input[1]);
+	//search
+	if(searchNode(head,"BAD"))
+		cout<<"found BAD in Trie tree"<<endl;
+	else
+		cout<<"BAD not found"<<endl;
+	if(searchNode(head,"BAG"))
+		cout<<"found BAG in Trie tree"<<endl;
+	else
+		cout<<"BAG not found"<<endl;
+	//delete
+	if(deleteNode(head,"ZYC"))
+		cout<<"ZYC is deleted"<<endl;
+	else
+		cout<<"ZYC can Not be deleted"<<endl;
+	
+	if(deleteNode(head,"BAD"))
+		cout<<"BAD is  deleted"<<endl;
+	else
+		cout<<"BAD Not found "<<endl;
+	return 0;
+}
+

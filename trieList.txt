@@ -1,0 +1,191 @@
+#include<bits/stdc++.h>
+#include<list>
+#include<iostream>
+using namespace std;
+
+#define SIZE 26
+
+typedef struct trie{
+	list<struct trie*>child;
+	bool stringEnd;
+}node;
+
+std::list<node*>::iterator it; //list iterator
+
+//new node dynamic memory allocation
+node* createNode(void)
+{
+	int i;
+	node* tempNode = new node;
+	tempNode->stringEnd =false;
+	for(i=0;i<SIZE;i++)
+		tempNode->child.push_back(NULL);
+	return tempNode;
+}
+
+void insertNode(node *root,string str)
+{
+	int count=0;
+	for(int i=0;i<str.length();i++)
+	{
+		int index = str[i] - 'A';
+		//list iteration
+		for(it = root->child.begin();it!=root->child.end();it++)
+		{
+			//iterate over to that required index
+			if(count == index){
+				count =0;
+				if(!(*it))			//*it can be null or any value indicating memory
+					*it = createNode();    //assigning return ptr of new memory node
+				
+				root = *it;			//going to next node/location
+				break;				//come out of inner loop as soon we get desired index
+			}
+			count++;				//untill we get desired element
+		}
+	}
+	root->stringEnd = true;			//marking end of string (a complete string)
+}
+
+bool isEmpty(node* root)
+{
+	for(it =root->child.begin();it!=root->child.end();it++)
+	{
+		//if not null then not empty
+		if(*it)
+			return false;
+	}
+	return true;
+}
+
+//done for list
+bool searchNode(node* root,string str)
+{	
+	for(int i=0;i<str.length();i++)
+	{
+		int count =0;
+		int index = str[i] - 'A';
+		//list iteration
+		for(it = root->child.begin();it!=root->child.end();it++)
+		{
+			//iterate over to that required index
+			if(count == index){
+				count =0;
+				if(!(*it))
+					return false;
+				
+				root = *it;
+				break;
+			}
+			count++;
+		}			
+	}
+	return((root != NULL) && root->stringEnd);	
+}
+
+node* deleteNode(node* root,string str,int cnt =0){	
+	
+	//if no elements
+	if(!root){
+		cout<<"String you entered is not present!!: "<<endl;
+		//flag =-1;
+		return NULL;
+	}
+
+	//for last value of string
+	if(cnt == str.size()){
+		//cout<<"last value of string "<<endl;
+		if(root->stringEnd){
+			root->stringEnd = false;
+		}
+		if(isEmpty(root)){
+			delete(root);
+		cout<<"Deleted node "<<endl;
+		//	flag = 1;
+			root =NULL;
+		}
+		return root;
+	}
+
+	//else for rest values
+	int index = str[cnt] - 'A';
+	int count =0;
+	node* nodeM = NULL;
+	//to get the location of index in list
+	for(it = root->child.begin();it!=root->child.end();it++){
+		if((count == index) && (*it)){
+
+	//		cout<<"match found for your string with index:  "<<index<<endl;
+			count =0;
+			nodeM = *it; //temp node to hold addr
+			break;
+		}
+			count++;
+	}
+
+	//recursively reach last value and delete reversely
+	nodeM = deleteNode(nodeM,str,cnt+1);
+	if(isEmpty(root) && (root->stringEnd == false)){
+		delete(root);
+		root =NULL;
+	}
+
+//cout<<"at the end of function with value of nodeM: "<<nodeM<<endl;
+return nodeM;
+}
+
+int main()
+{
+	cout<<"inside main"<<endl;
+	cout<<endl;
+	string input[] = {"BAN","BAD","ABC"};
+	
+	//head or root node made
+	node* head = createNode();
+	cout<<"no nodes inserted yet!!"<<endl;
+	if(isEmpty(head))	
+		cout<<"it is empty!!"<<endl;
+	else
+		cout<<"Trie is not empty!"<<endl;
+	
+	cout<<endl;
+	//inserting
+	insertNode(head,input[0]);
+	cout<<"after insert" <<endl;
+	if(isEmpty(head))
+		cout<<"it is empty!!"<<endl;
+	else
+		cout<<"Trie is not empty!"<<endl;
+	
+	cout<<endl;
+	//inserting 2nd string
+	insertNode(head,input[1]);
+
+	//search
+	if(searchNode(head,"BAD"))
+		cout<<"search::found BAD in Trie tree"<<endl;
+	else
+		cout<<"search::BAD not found"<<endl;
+	if(searchNode(head,"BAG"))
+		cout<<"search::found XYZ in Trie tree"<<endl;
+	else
+		cout<<"search::XYZ not found"<<endl;
+	
+	cout<<endl;
+
+	//delete
+	cout<<"Calling Delete for ZYC string:"<<endl;
+	deleteNode(head,"ZYC");
+	
+	cout<<"Calling Delete for BAD string"<<endl;
+	deleteNode(head,"BAD");
+	
+	cout<<endl;
+	//again search after deletion
+	if(searchNode(head,"BAD"))
+		cout<<"search::found BAD in Trie tree"<<endl;
+	else
+		cout<<"search::BAD not found"<<endl;
+	return 0;
+}
+
